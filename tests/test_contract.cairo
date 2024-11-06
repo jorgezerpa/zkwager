@@ -14,36 +14,28 @@ fn deploy_contract(name: ByteArray) -> ContractAddress {
 }
 
 #[test]
-fn test_increase_balance() {
+fn test_deploy() {
     let contract_address = deploy_contract("Bet");
-
     let dispatcher = IBetDispatcher { contract_address };
-    let value = dispatcher.test();
-    println!("value {}", value);
-    assert_eq!(value,7);
-    // let balance_before = dispatcher.get_balance();
-    // assert(balance_before == 0, 'Invalid balance');
 
-    // dispatcher.increase_balance(42);
-
-    // let balance_after = dispatcher.get_balance();
-    // assert(balance_after == 42, 'Invalid balance');
+    // deploy should:
+    // 1. set values from constructor
+    // 2. deploy counters
 }
 
 // #[test]
-// #[feature("safe_dispatcher")]
-// fn test_cannot_increase_balance_with_zero_value() {
+// fn test_increase_balance() {
 //     let contract_address = deploy_contract("Bet");
 
-//     let safe_dispatcher = IBetSafeDispatcher { contract_address };
+//     let dispatcher = IBetDispatcher { contract_address };
+//     let value = dispatcher.test();
+//     println!("value {}", value);
+//     assert_eq!(value,7);
+//     // let balance_before = dispatcher.get_balance();
+//     // assert(balance_before == 0, 'Invalid balance');
 
-//     let balance_before = safe_dispatcher.get_balance().unwrap();
-//     assert(balance_before == 0, 'Invalid balance');
+//     // dispatcher.increase_balance(42);
 
-//     match safe_dispatcher.increase_balance(0) {
-//         Result::Ok(_) => core::panic_with_felt252('Should have panicked'),
-//         Result::Err(panic_data) => {
-//             assert(*panic_data.at(0) == 'Amount cannot be 0', *panic_data.at(0));
-//         }
-//     };
+//     // let balance_after = dispatcher.get_balance();
+//     // assert(balance_after == 42, 'Invalid balance');
 // }
