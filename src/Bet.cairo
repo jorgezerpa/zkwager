@@ -1,11 +1,10 @@
 // TO DO -> How to manage the remaining of currency? (example -> no perfect 0 divisions, sum of percentages of distributions is not 100, etc)
 #[starknet::interface]
 pub trait IBet<TContractState> {
-    fn init_bet(ref self: TContractState); // maybe is not neeeded if I use a constructor
+    fn init_bet(ref self: TContractState);
     fn fund_bet(ref self: TContractState);
 
     fn get_players(ref self: TContractState)-> Array<starknet::ContractAddress>;
-    fn get_amount_per_player(ref self: TContractState)-> u128;
     fn get_bet_metadata(ref self: TContractState) -> Bet::Metadata;
 
     fn check_funders(ref self: TContractState);
@@ -135,9 +134,6 @@ mod Bet {
                 players_array.append(players_vec.at(i).read());
             };
             players_array
-        }
-        fn get_amount_per_player(ref self: ContractState) -> u128 {
-            self.amount_per_player.read()
         }
         fn get_bet_metadata(ref self: ContractState) -> Metadata {
             let mut players_array = array![];
