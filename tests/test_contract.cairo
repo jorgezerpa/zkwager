@@ -49,8 +49,6 @@ fn deploy_contract(name: ByteArray) -> ContractAddress {
 fn test_deploy() {
     let contract_address = deploy_contract("Bet");
     let dispatcher = IBetDispatcher { contract_address };
-    let players = dispatcher.get_players();
-    let amount_per_player = dispatcher.get_amount_per_player();
     let contract_metadata = dispatcher.get_bet_metadata();
 
     assert_eq!(3, contract_metadata.players.len(), "total players should be 3");
@@ -68,3 +66,16 @@ fn test_deploy() {
     assert_eq!(contract_metadata.fixed_house_hold, 0, "fixed house hold should be 0" );
     assert!(!contract_metadata.is_bet_running, "contract should not be running on deploy");
 }
+
+#[test]
+fn test_get_players() {
+    let contract_address = deploy_contract("Bet");
+    let dispatcher = IBetDispatcher { contract_address };
+    let players = dispatcher.get_players();
+
+    assert_eq!(3, players.len(), "total players should be 3");
+    assert_eq!(@ADDR1(), players.at(0), "first address should be equal to {:?}", ADDR1());
+    assert_eq!(@ADDR2(), players.at(1), "second address should be equal to {:?}", ADDR2());
+    assert_eq!(@ADDR3(), players.at(2), "third address should be equal to {:?}", ADDR3());
+}
+
