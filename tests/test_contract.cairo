@@ -3,10 +3,10 @@ use starknet::syscalls::call_contract_syscall;
 
 use snforge_std::{start_mock_call, stop_mock_call, mock_call, declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address, stop_cheat_caller_address, cheat_caller_address, CheatSpan };
 // use snforge_std::start_mock_call;
-// use bet3_contract::Bet::IBetSafeDispatcher;
-// use bet3_contract::Bet::IBetSafeDispatcherTrait;
-use bet3_contract::Bet::IBetDispatcher;
-use bet3_contract::Bet::IBetDispatcherTrait;
+// use zkwager::Bet::IBetSafeDispatcher;
+// use zkwager::Bet::IBetSafeDispatcherTrait;
+use zkwager::Bet::IBetDispatcher;
+use zkwager::Bet::IBetDispatcherTrait;
 
 use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl };
 use openzeppelin_token::erc20::interface::{ IERC20Dispatcher, IERC20DispatcherTrait };
