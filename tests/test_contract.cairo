@@ -118,6 +118,27 @@ fn test_transfer_bet() {
     assert_eq!(current_contract_balance+amount_to_send, balance_bet, "Should receive STRK from sender account");
 }
 
+#[test]
+#[fork("testnet")]
+fn test_get_bet_balance() {
+    let contract_address = deploy_contract("Bet");
+    let dispatcher = IBetDispatcher { contract_address };
+    let strk_dispatcher = IERC20Dispatcher { contract_address: STRK_ADDR() };
+    
+    let sender = STRK_ACCOUNT1();
+    let current_sender_balance = strk_dispatcher.balance_of(sender);
+    let current_contract_balance = strk_dispatcher.balance_of(contract_address);
+    let amount_to_send: u256 = 2000000000000000000; // 1 STRK (assuming 18 decimals)
+
+    start_cheat_caller_address(strk_dispatcher.contract_address, sender);
+    strk_dispatcher.transfer(contract_address, amount_to_send);
+    stop_cheat_caller_address(contract_address);
+
+    let bet_balance = dispatcher.get_bet_balance();
+    
+    assert_eq!(amount_to_send, bet_balance, "Bet balance should be the same as transfered amount");
+}
+
 // #[test]
 // #[fork("Mainnet")]
 // fn test_transfer_bet() {

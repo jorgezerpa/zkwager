@@ -18,7 +18,8 @@ pub trait IBet<TContractState> {
     // -----
     fn get_counter_address_by_id(ref self: TContractState);
     fn get_counter_address_by_name(ref self: TContractState);
-
+    
+    fn get_bet_balance(self: @TContractState) -> u256;
 }
 
 
@@ -27,11 +28,13 @@ pub trait IBet<TContractState> {
 #[starknet::contract]
 mod Bet {
     use starknet::storage::MutableVecTrait;
-    use starknet::{ContractAddress, get_caller_address};
+    use starknet::{ContractAddress, get_caller_address, get_contract_address};
     use starknet::storage::{
         Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
         StoragePointerWriteAccess, Vec, VecTrait
     };
+    use openzeppelin_token::erc20::interface::{ IERC20Dispatcher, IERC20DispatcherTrait };
+
 
     #[derive(Serde,Drop)]
     pub struct Metadata {
@@ -180,6 +183,11 @@ mod Bet {
         // -----
         fn get_counter_address_by_id(ref self: ContractState) {}
         fn get_counter_address_by_name(ref self: ContractState) {}
+        fn get_bet_balance(self: @ContractState) -> u256 {
+            let contract_address = get_contract_address();
+            let contract_balance = BetInternalImpl::token_dispatcher().balance_of(contract_address);
+            contract_balance
+        }
     }
  
     #[generate_trait]
@@ -211,6 +219,11 @@ mod Bet {
             let total_amount = amount_per_player * number_of_players;
             let real_total_amount = ((percentage_of_house_hold * total_amount)/100)-fixed_house_hold;
             real_total_amount
+        }
+        fn token_dispatcher() -> IERC20Dispatcher {
+            IERC20Dispatcher {
+                contract_address: starknet::contract_address_const::<0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d>()
+            }
         }
         
     }
