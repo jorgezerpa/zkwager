@@ -1,3 +1,4 @@
+pub mod BetFactory;
 pub mod Bet;
 pub mod Counter;
 // pub mod openzeppelin;
