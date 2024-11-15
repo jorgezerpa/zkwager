@@ -53,12 +53,27 @@ fn test_deploy() {
     deploy_contract("BetFactory");
 }
 
+fn test_generate_bet_id() {
+    let contract_address = deploy_contract("BetFactory");
+    let dispatcher = IBetFactoryDispatcher { contract_address };
+
+    let id1 = dispatcher.generate_bet_id();
+    let id2 = dispatcher.generate_bet_id();
+    let id3 = dispatcher.generate_bet_id();
+
+    assert!(id1==1, "id should be {}", 1);
+    assert!(id2==2, "id should be {}", 2);
+    assert!(id3==3, "id should be {}", 3);
+}
+
 #[test]
-fn test_deploy_bet() {
+fn test_create_bet() {
     let mut spy = spy_events();
 
     let contract_address = deploy_contract("BetFactory");
     let dispatcher = IBetFactoryDispatcher { contract_address };
+    
+    let game_id = dispatcher.generate_bet_id();
 
     let mut players = ArrayTrait::new();
     players.append(ADDR1());
@@ -75,7 +90,7 @@ fn test_deploy_bet() {
     let percentage_of_house_hold = 2;
     let fixed_house_hold = 10000000000000000;
 
-    let bet_contract_address = dispatcher.create_bet(players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold);
+    let bet_contract_address = dispatcher.create_bet(game_id, players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold);
 
     spy.assert_emitted(
         @array![
