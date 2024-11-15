@@ -10,7 +10,7 @@ pub trait IBetFactory<TContractState> {
 }
 
 #[starknet::contract]
-mod BetFactory {
+pub mod BetFactory {
 
     use starknet::storage::VecTrait;
 use starknet::storage::MutableVecTrait;
@@ -25,6 +25,19 @@ use starknet::{
         Vec
     };
     use starknet::class_hash::ClassHash;
+
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    pub enum Event {
+        BetCreated: BetCreated,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct BetCreated {
+        #[key]
+        pub bet_contract_address:ContractAddress,
+        pub amount_per_player:u128
+    }
 
     #[storage]
     struct Storage {
@@ -48,7 +61,6 @@ use starknet::{
             fixed_house_hold:u128,
             // number_of_counters: Array<CounterMetadata>,
         ) -> ContractAddress {
-
             // deploy contract
             let mut call_data = ArrayTrait::<felt252>::new();
             players.serialize(ref call_data);
@@ -60,9 +72,18 @@ use starknet::{
             let (bet_contract_address, _) = syscalls::deploy_syscall(bet_class_hash, 0, call_data.span(), true).unwrap_syscall();
 
             // save in storage
-            for player in players {
+            for player in players.clone() {
                 self.bets.entry(bet_contract_address).append().write(player);
             };
+
+            // emit event 
+            self
+                .emit(
+                    BetCreated {
+                        bet_contract_address,
+                        amount_per_player
+                    }
+                );
 
             // return 
             bet_contract_address
