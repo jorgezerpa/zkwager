@@ -10,10 +10,12 @@ pub trait ICounter<TContractState> {
 
 #[starknet::contract]
 mod Counter {
-    use starknet::{ContractAddress, get_caller_address};
+    use starknet::{ContractAddress};
     use starknet::storage::{
-        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
-        StoragePointerWriteAccess, Vec, VecTrait
+        Map, 
+        // StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
+        StoragePointerWriteAccess, Vec, 
+        // VecTrait
     };
 
     #[storage]

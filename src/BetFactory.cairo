@@ -1,5 +1,4 @@
-use starknet::{
-    // get_caller_address, get_contract_address, get_block_timestamp, 
+use starknet::{ 
     ContractAddress, 
 };
 
@@ -7,7 +6,8 @@ use starknet::{
 pub trait IBetFactory<TContractState> {
     fn generate_bet_id(ref self: TContractState) -> u128; // should be a hash with player data or something like that. By now, is just an incremental count
     fn create_bet(ref self: TContractState, game_id:u128, players: Array<ContractAddress>, amount_per_player: u128, percentage_of_distribution: Array<u128>, percentage_of_house_hold: u128, fixed_house_hold:u128) -> ContractAddress; 
-    // fn get_bets(self: @TContractState, bet_address:ContractAddress) -> Array<ContractAddress>;
+    fn get_bets_by_wallet(self: @TContractState, game_id:u128, player:ContractAddress) -> Array<ContractAddress>;
+    fn get_game_bets(self: @TContractState, game_id:u128) -> Array<ContractAddress>;
 }
 
 #[starknet::contract]
@@ -46,6 +46,7 @@ use starknet::{
         bet_class_hash: ClassHash,
         game_bets: Map<u128, Vec<ContractAddress>>,
         game_user_bets: Map<u128, Map<ContractAddress, Vec<ContractAddress>>>,
+        salt_counter: u128,
     }
 
     #[constructor]
@@ -82,9 +83,11 @@ use starknet::{
             call_data.append(percentage_of_house_hold.try_into().unwrap());
             call_data.append(fixed_house_hold.try_into().unwrap());
             let bet_class_hash = self.bet_class_hash.read();
-            let (bet_contract_address, _) = syscalls::deploy_syscall(bet_class_hash, 0, call_data.span(), true).unwrap_syscall();
 
+            let salt = self.salt_counter.read();
+            self.salt_counter.write(salt+1);
 
+            let (bet_contract_address, _) = syscalls::deploy_syscall(bet_class_hash, salt.try_into().unwrap(), call_data.span(), false).unwrap_syscall();
 
             // save in storage
             for player in players.clone() {
@@ -104,6 +107,30 @@ use starknet::{
 
             // return 
             bet_contract_address
+        }
+        
+        fn get_bets_by_wallet(self: @ContractState, game_id:u128, player:ContractAddress) -> Array<ContractAddress> {
+            // get vector of player's bet addresses
+            let bets_vec = self.game_user_bets.entry(game_id).entry(player);
+            // convert vector into an array and return it 
+            let mut bets_array = ArrayTrait::<ContractAddress>::new();
+            for i in 0..bets_vec.len() {
+                bets_array.append(bets_vec.at(i).read());
+            };
+
+            bets_array
+        }
+
+        fn get_game_bets(self: @ContractState, game_id:u128) -> Array<ContractAddress> {
+            // get vector of player's bet addresses
+            let bets_vec = self.game_bets.entry(game_id);
+            // convert vector into an array and return it 
+            let mut bets_array = ArrayTrait::<ContractAddress>::new();
+            for i in 0..bets_vec.len() {
+                bets_array.append(bets_vec.at(i).read());
+            };
+
+            bets_array
         }
 
         // fn get_bets(self: @ContractState, bet_address:ContractAddress) -> Array<ContractAddress> {

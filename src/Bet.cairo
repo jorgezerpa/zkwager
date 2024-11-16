@@ -28,10 +28,13 @@ pub trait IBet<TContractState> {
 #[starknet::contract]
 mod Bet {
     use starknet::storage::MutableVecTrait;
-    use starknet::{ContractAddress, get_caller_address, get_contract_address};
+    use starknet::{ContractAddress, get_contract_address};
     use starknet::storage::{
-        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
-        StoragePointerWriteAccess, Vec, VecTrait
+        Map, 
+        // StorageMapReadAccess, StorageMapWriteAccess, 
+        StoragePointerReadAccess,
+        StoragePointerWriteAccess, Vec, 
+        // VecTrait
     };
     use openzeppelin_token::erc20::interface::{ IERC20Dispatcher, IERC20DispatcherTrait };
 

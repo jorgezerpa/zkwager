@@ -1,10 +1,7 @@
 use starknet::ContractAddress;
-use starknet::syscalls::call_contract_syscall;
 
-use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address, stop_cheat_caller_address, spy_events, EventSpyAssertionsTrait };
-// use snforge_std::start_mock_call;
-// use zkwager::Bet::IBetSafeDispatcher;
-// use zkwager::Bet::IBetSafeDispatcherTrait;
+use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, spy_events, EventSpyAssertionsTrait };
+
 use zkwager::BetFactory::IBetFactoryDispatcher;
 use zkwager::BetFactory::IBetFactoryDispatcherTrait;
 
@@ -107,5 +104,121 @@ fn test_create_bet() {
             )
         ]
     );
+}
+
+#[test]
+fn test_create_multiple_bets() {
+    let contract_address = deploy_contract("BetFactory");
+    let dispatcher = IBetFactoryDispatcher { contract_address };
+    
+    let game_id = dispatcher.generate_bet_id();
+
+    let mut players = ArrayTrait::new();
+    players.append(ADDR1());
+    players.append(ADDR2());
+    players.append(ADDR3());
+
+    let amount_per_player = 2000000000000000000;
+    
+    let mut percentage_of_distribution = ArrayTrait::<u128>::new();
+    percentage_of_distribution.append(33);
+    percentage_of_distribution.append(33);
+    percentage_of_distribution.append(33);
+
+    let percentage_of_house_hold = 2;
+    let fixed_house_hold = 10000000000000000;
+
+    dispatcher.create_bet(game_id, players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold);
+//   -----------------
+
+    let mut players2 = ArrayTrait::new();
+    players2.append(ADDR1());
+    players2.append(ADDR2());
+    players2.append(ADDR3());
+    
+    let mut percentage_of_distribution2 = ArrayTrait::<u128>::new();
+    percentage_of_distribution2.append(33);
+    percentage_of_distribution2.append(33);
+    percentage_of_distribution2.append(33);
+
+    let percentage_of_house_hold = 2;
+    let fixed_house_hold = 10000000000000000;
+
+    dispatcher.create_bet(game_id, players2, amount_per_player, percentage_of_distribution2, percentage_of_house_hold, fixed_house_hold);
 
 }
+
+#[test]
+fn test_get_bets_by_wallet() {
+    let contract_address = deploy_contract("BetFactory");
+    let dispatcher = IBetFactoryDispatcher { contract_address };
+    
+    // creating a new bet 
+    let game_id = dispatcher.generate_bet_id();
+    let mut players = ArrayTrait::new();
+    players.append(ADDR1());
+    players.append(ADDR2());
+    players.append(ADDR3());
+    let amount_per_player = 2000000000000000000;
+    let mut percentage_of_distribution = ArrayTrait::<u128>::new();
+    percentage_of_distribution.append(33);
+    percentage_of_distribution.append(33);
+    percentage_of_distribution.append(33);
+    let percentage_of_house_hold = 2;
+    let fixed_house_hold = 10000000000000000;
+    let bet_contract_address = dispatcher.create_bet(game_id, players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold);
+
+    // getting bets by users 
+    let player1_bets = dispatcher.get_bets_by_wallet(game_id, ADDR1());
+    let player2_bets = dispatcher.get_bets_by_wallet(game_id, ADDR2());
+    let player3_bets = dispatcher.get_bets_by_wallet(game_id, ADDR3());
+
+    assert!(bet_contract_address == *player1_bets.at(0), "Player1's first bet address should be equal to the deployed bet address");
+    assert!(bet_contract_address == *player2_bets.at(0), "Player2's first bet address should be equal to the deployed bet address");
+    assert!(bet_contract_address == *player3_bets.at(0), "Player3's first bet address should be equal to the deployed bet address");
+}
+
+#[test]
+fn test_get_game_bets() {
+    let contract_address = deploy_contract("BetFactory");
+    let dispatcher = IBetFactoryDispatcher { contract_address };
+    
+    let game_id = dispatcher.generate_bet_id();
+
+    // creating multiple bets
+    let bet_address1 = deploy_bets_for_test(dispatcher, game_id);
+    let bet_address2 = deploy_bets_for_test(dispatcher, game_id);
+    let bet_address3 = deploy_bets_for_test(dispatcher, game_id);
+    
+    let game_bets = dispatcher.get_game_bets(1);
+
+    assert!(bet_address1 == *game_bets.at(0), "first game's bet address should be equal to the first deployed bet address");
+    assert!(bet_address2 == *game_bets.at(1), "second game's bet address should be equal to the second deployed bet address");
+    assert!(bet_address3 == *game_bets.at(2), "third game's bet address should be equal to the third deployed bet address");
+}
+
+
+// utils
+// mod Utils {
+    pub fn deploy_bets_for_test(dispatcher:IBetFactoryDispatcher, game_id:u128) -> ContractAddress  {
+    
+    let mut players = ArrayTrait::new();
+    players.append(ADDR1());
+    players.append(ADDR2());
+    players.append(ADDR3());
+
+    let amount_per_player = 2000000000000000000;
+
+    let mut percentage_of_distribution = ArrayTrait::<u128>::new();
+    percentage_of_distribution.append(33);
+    percentage_of_distribution.append(33);
+    percentage_of_distribution.append(33);
+    
+    let percentage_of_house_hold = 2;
+    let fixed_house_hold = 10000000000000000;
+    
+    // creating multiple bets
+    let bet_address = dispatcher.create_bet(game_id, players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold);
+    bet_address
+    } 
+// }
