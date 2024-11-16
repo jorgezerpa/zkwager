@@ -1,51 +1,29 @@
 use starknet::ContractAddress;
-use starknet::syscalls::call_contract_syscall;
 
-use snforge_std::{start_mock_call, stop_mock_call, mock_call, declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address, stop_cheat_caller_address, cheat_caller_address, CheatSpan };
+use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address, stop_cheat_caller_address };
 // use snforge_std::start_mock_call;
 // use zkwager::Bet::IBetSafeDispatcher;
 // use zkwager::Bet::IBetSafeDispatcherTrait;
 use zkwager::Bet::IBetDispatcher;
 use zkwager::Bet::IBetDispatcherTrait;
 
-use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl };
 use openzeppelin_token::erc20::interface::{ IERC20Dispatcher, IERC20DispatcherTrait };
 
-fn OWNER() -> ContractAddress {
-    starknet::contract_address_const::<0x123>()
-}
-fn ADDR1() -> ContractAddress {
-    starknet::contract_address_const::<0x345>()
-}
-fn ADDR2() -> ContractAddress {
-    starknet::contract_address_const::<0x678>()
-}
-
-fn ADDR3() -> ContractAddress {
-    starknet::contract_address_const::<0x910>()
-}
-
-
-fn ETH_ADDR() -> ContractAddress {
-    starknet::contract_address_const::<0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7>()
-} 
-
-fn STRK_ADDR() -> ContractAddress {
-    starknet::contract_address_const::<0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d>()
-}
-
-fn STRK_ACCOUNT1() -> ContractAddress { // this account has 20 STRK to test transaction (only if test Forks of testnet)
-    starknet::contract_address_const::<0x0416575467BBE3E3D1ABC92d175c71e06C7EA1FaB37120983A08b6a2B2D12794>()
-} 
-
+use zkwager::Constants::TestData::{
+    ACCOUNT1,
+    ACCOUNT2,
+    ACCOUNT3,
+    STRK_ACCOUNT1,
+    STRK_ADDR,
+};
 
 fn deploy_contract(name: ByteArray) -> ContractAddress {
     let contract = declare(name).unwrap().contract_class();
 
     let mut players = ArrayTrait::new();
-    players.append(ADDR1());
-    players.append(ADDR2());
-    players.append(ADDR3());
+    players.append(ACCOUNT1());
+    players.append(ACCOUNT2());
+    players.append(ACCOUNT3());
     
     let mut percentage_of_distribution = ArrayTrait::<u128>::new();
     percentage_of_distribution.append(33);
@@ -70,9 +48,9 @@ fn test_deploy() {
     let contract_metadata = dispatcher.get_bet_metadata();
 
     assert_eq!(3, contract_metadata.players.len(), "total players should be 3");
-    assert_eq!(@ADDR1(), contract_metadata.players.at(0), "first address should be equal to {:?}", ADDR1());
-    assert_eq!(@ADDR2(), contract_metadata.players.at(1), "second address should be equal to {:?}", ADDR2());
-    assert_eq!(@ADDR3(), contract_metadata.players.at(2), "third address should be equal to {:?}", ADDR3());
+    assert_eq!(@ACCOUNT1(), contract_metadata.players.at(0), "first address should be equal to {:?}", ACCOUNT1());
+    assert_eq!(@ACCOUNT2(), contract_metadata.players.at(1), "second address should be equal to {:?}", ACCOUNT2());
+    assert_eq!(@ACCOUNT3(), contract_metadata.players.at(2), "third address should be equal to {:?}", ACCOUNT3());
     assert_eq!(contract_metadata.total_amount, 57, "total amount after house holds should be 57");
     assert_eq!(contract_metadata.number_of_winners, 3, "number of winners should be equal to 3");
     assert_eq!(contract_metadata.distributions.len(), 3, "distributions should be equal to 3");
@@ -92,9 +70,9 @@ fn test_get_players() {
     let players = dispatcher.get_players();
 
     assert_eq!(3, players.len(), "total players should be 3");
-    assert_eq!(@ADDR1(), players.at(0), "first address should be equal to {:?}", ADDR1());
-    assert_eq!(@ADDR2(), players.at(1), "second address should be equal to {:?}", ADDR2());
-    assert_eq!(@ADDR3(), players.at(2), "third address should be equal to {:?}", ADDR3());
+    assert_eq!(@ACCOUNT1(), players.at(0), "first address should be equal to {:?}", ACCOUNT1());
+    assert_eq!(@ACCOUNT2(), players.at(1), "second address should be equal to {:?}", ACCOUNT2());
+    assert_eq!(@ACCOUNT3(), players.at(2), "third address should be equal to {:?}", ACCOUNT3());
 }
 
 #[test]
@@ -126,8 +104,8 @@ fn test_get_bet_balance() {
     let strk_dispatcher = IERC20Dispatcher { contract_address: STRK_ADDR() };
     
     let sender = STRK_ACCOUNT1();
-    let current_sender_balance = strk_dispatcher.balance_of(sender);
-    let current_contract_balance = strk_dispatcher.balance_of(contract_address);
+    // let current_sender_balance = strk_dispatcher.balance_of(sender);
+    // let current_contract_balance = strk_dispatcher.balance_of(contract_address);
     let amount_to_send: u256 = 2000000000000000000; // 1 STRK (assuming 18 decimals)
 
     start_cheat_caller_address(strk_dispatcher.contract_address, sender);

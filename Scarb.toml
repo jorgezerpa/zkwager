@@ -22,4 +22,4 @@ test = "snforge test"
 [[tool.snforge.fork]]
 name = "testnet"
 url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
-block_id.number = "297408"
+block_id.number = "317488"
