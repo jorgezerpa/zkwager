@@ -4,7 +4,7 @@ use starknet::{
 
 #[starknet::interface]
 pub trait IBetFactory<TContractState> {
-    fn generate_bet_id(ref self: TContractState) -> u128; // should be a hash with player data or something like that. By now, is just an incremental count
+    fn generate_game_id(ref self: TContractState) -> u128; // should be a hash with player data or something like that. By now, is just an incremental count
     fn create_bet(ref self: TContractState, game_id:u128, players: Array<ContractAddress>, amount_per_player: u128, percentage_of_distribution: Array<u128>, percentage_of_house_hold: u128, fixed_house_hold:u128) -> ContractAddress; 
     fn get_bets_by_wallet(self: @TContractState, game_id:u128, player:ContractAddress) -> Array<ContractAddress>;
     fn get_game_bets(self: @TContractState, game_id:u128) -> Array<ContractAddress>;
@@ -58,7 +58,7 @@ use starknet::{
     #[abi(embed_v0)]
     impl BetFactoryImpl of super::IBetFactory<ContractState> {
 
-        fn generate_bet_id(ref self: ContractState) -> u128 {
+        fn generate_game_id(ref self: ContractState) -> u128 {
             let last_index = self.game_ids.len() - 1;
             let last_id = self.game_ids.at(last_index).read();
             self.game_ids.append().write(last_id + 1_128);

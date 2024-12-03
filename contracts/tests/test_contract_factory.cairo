@@ -52,13 +52,13 @@ fn test_deploy() {
     deploy_contract("BetFactory");
 }
 
-fn test_generate_bet_id() {
+fn test_generate_game_id() {
     let contract_address = deploy_contract("BetFactory");
     let dispatcher = IBetFactoryDispatcher { contract_address };
 
-    let id1 = dispatcher.generate_bet_id();
-    let id2 = dispatcher.generate_bet_id();
-    let id3 = dispatcher.generate_bet_id();
+    let id1 = dispatcher.generate_game_id();
+    let id2 = dispatcher.generate_game_id();
+    let id3 = dispatcher.generate_game_id();
 
     assert!(id1==1, "id should be {}", 1);
     assert!(id2==2, "id should be {}", 2);
@@ -72,22 +72,9 @@ fn test_create_bet() {
     let contract_address = deploy_contract("BetFactory");
     let dispatcher = IBetFactoryDispatcher { contract_address };
     
-    let game_id = dispatcher.generate_bet_id();
+    let game_id = dispatcher.generate_game_id();
 
-    let mut players = ArrayTrait::new();
-    players.append(ACCOUNT1());
-    players.append(ACCOUNT2());
-    players.append(ACCOUNT3());
-
-    let amount_per_player = 2000000000000000000;
-    
-    let mut percentage_of_distribution = ArrayTrait::<u128>::new();
-    percentage_of_distribution.append(33);
-    percentage_of_distribution.append(33);
-    percentage_of_distribution.append(33);
-
-    let percentage_of_house_hold = 2;
-    let fixed_house_hold = 10000000000000000;
+    let (players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold) = CALL_DATA_TO_BET_DEPLOY();
 
     let bet_contract_address = dispatcher.create_bet(game_id, players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold);
 
@@ -113,7 +100,7 @@ fn test_create_multiple_bets() {
     let contract_address = deploy_contract("BetFactory");
     let dispatcher = IBetFactoryDispatcher { contract_address };
     
-    let game_id = dispatcher.generate_bet_id();
+    let game_id = dispatcher.generate_game_id();
     let (players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold) = CALL_DATA_TO_BET_DEPLOY();
     let (players2, amount_per_player2, percentage_of_distribution2, percentage_of_house_hold2, fixed_house_hold2) = CALL_DATA_TO_BET_DEPLOY();
     
@@ -127,7 +114,7 @@ fn test_get_bets_by_wallet() {
     let dispatcher = IBetFactoryDispatcher { contract_address };
     
     // creating a new bet 
-    let game_id = dispatcher.generate_bet_id();
+    let game_id = dispatcher.generate_game_id();
     let (players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold) = CALL_DATA_TO_BET_DEPLOY();
     let bet_contract_address = dispatcher.create_bet(game_id, players, amount_per_player, percentage_of_distribution, percentage_of_house_hold, fixed_house_hold);
 
@@ -146,7 +133,7 @@ fn test_get_game_bets() {
     let contract_address = deploy_contract("BetFactory");
     let dispatcher = IBetFactoryDispatcher { contract_address };
     
-    let game_id = dispatcher.generate_bet_id();
+    let game_id = dispatcher.generate_game_id();
     let (players1, amount_per_player1, percentage_of_distribution1, percentage_of_house_hold1, fixed_house_hold1) = CALL_DATA_TO_BET_DEPLOY();
     let (players2, amount_per_player2, percentage_of_distribution2, percentage_of_house_hold2, fixed_house_hold2) = CALL_DATA_TO_BET_DEPLOY();
     let (players3, amount_per_player3, percentage_of_distribution3, percentage_of_house_hold3, fixed_house_hold3) = CALL_DATA_TO_BET_DEPLOY();
