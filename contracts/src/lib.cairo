@@ -1,5 +1,6 @@
 pub mod Constants;
-pub mod BetFactory;
+pub mod GameRegister;
+pub mod Game;
 pub mod Bet;
 pub mod Counter;
 // pub mod openzeppelin;

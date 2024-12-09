@@ -2,7 +2,7 @@
 #[starknet::interface]
 pub trait IBet<TContractState> {
     fn init_bet(ref self: TContractState);
-    fn fund_bet(ref self: TContractState);
+    fn fund_bet(ref self: TContractState, player:starknet::ContractAddress);
 
     fn get_players(ref self: TContractState)-> Array<starknet::ContractAddress>;
     fn get_bet_metadata(ref self: TContractState) -> Bet::Metadata;
@@ -24,16 +24,17 @@ pub trait IBet<TContractState> {
 
 
 
-
 #[starknet::contract]
 mod Bet {
     use starknet::storage::MutableVecTrait;
-    use starknet::{ContractAddress, get_contract_address};
+    use starknet::{ContractAddress, get_contract_address, get_caller_address};
     use starknet::storage::{
         Map, 
+        StoragePathEntry,
         // StorageMapReadAccess, StorageMapWriteAccess, 
         StoragePointerReadAccess,
-        StoragePointerWriteAccess, Vec, 
+        StoragePointerWriteAccess, 
+        Vec, 
         // VecTrait
     };
     use openzeppelin_token::erc20::interface::{ IERC20Dispatcher, IERC20DispatcherTrait };
@@ -67,6 +68,7 @@ mod Bet {
     struct Storage {
         // basic
         players: Vec<ContractAddress>,
+        players_state: Map<ContractAddress, bool>, // Register of players who deposit the bet calling the fund_bet function
         amount_per_player: u128,
         total_amount: u128,
         number_of_winners: u128, // 1: singleWinner mode, >2: MultiWinner mode
@@ -107,6 +109,7 @@ mod Bet {
 
         for player in players.clone() {
             self.players.append().write(player);
+            self.players_state.entry(player).write(false);
         };
         for percentage in percentage_of_distribution.clone() {
             self.percentage_of_distribution.append().write(percentage);
@@ -132,7 +135,13 @@ mod Bet {
     #[abi(embed_v0)]
     impl BetImpl of super::IBet<ContractState> {
         fn init_bet(ref self: ContractState) {}
-        fn fund_bet(ref self: ContractState) {}
+        fn fund_bet(ref self: ContractState, player:ContractAddress) {
+            let erc20_dispatcher = BetInternalImpl::token_dispatcher();
+
+            let recipient = get_contract_address();
+            let amount = self.amount_per_player.read();
+            erc20_dispatcher.transfer_from(player, recipient, amount.into());
+        }
         fn get_players(ref self: ContractState) -> Array<starknet::ContractAddress> {
             let mut players_array = array![];
             let players_vec = self.players;
